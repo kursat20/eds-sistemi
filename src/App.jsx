@@ -25,7 +25,7 @@ export default function App() {
     { id: 2, plate: '34 EDS 2024', amount: 1500, paid: false, date: '2024-02-16' }
   ]);
 
-  // Anasayfaya döndüğünde admin yetkisini sıfırla (Tekrar şifre istemesi için)
+  // Anasayfaya döndüğünde admin yetkisini sıfırla
   const goHome = () => {
     setIsAdmin(false);
     setCurrentPage('home');
@@ -36,8 +36,8 @@ export default function App() {
   };
 
   return (
-    // bg-[#e0f2fe] ile açık mavi arka plan zorlandı
-    <div className="min-h-screen bg-[#e0f2fe] text-slate-900 font-sans selection:bg-blue-200" style={{ backgroundColor: '#e0f2fe' }}>
+    // Arka planın her yeri kaplaması için h-full ve min-h-screen kullanımı
+    <div className="min-h-screen w-full bg-[#e0f2fe] text-slate-900 font-sans selection:bg-blue-200 overflow-x-hidden">
       <LoadScripts />
       
       {/* Üst Menü */}
@@ -55,7 +55,7 @@ export default function App() {
                 className="flex items-center space-x-4 px-12 py-6 bg-blue-600 hover:bg-blue-800 text-white rounded-full transition-all text-2xl font-black shadow-2xl"
               >
                 <Home size={40} />
-                <span>ANASAYFAYA DÖN</span>
+                <span>ANASAYFA</span>
               </button>
             )}
             <button 
@@ -69,7 +69,7 @@ export default function App() {
       </header>
 
       {/* Ana İçerik */}
-      <main className="container mx-auto p-12 md:p-24 pb-48">
+      <main className="container mx-auto p-12 md:p-24 pb-64">
         {currentPage === 'home' && <HomeScreen setPage={setCurrentPage} />}
         {currentPage === 'inquiry' && <InquiryScreen fines={fines} onPay={handlePayFine} />}
         {currentPage === 'camera' && <CameraScreen />}
@@ -84,7 +84,7 @@ export default function App() {
         />
       )}
 
-      <footer className="fixed bottom-0 w-full bg-blue-900 text-white text-center py-10 text-3xl border-t-8 border-blue-400 font-black tracking-widest uppercase">
+      <footer className="fixed bottom-0 w-full bg-blue-900 text-white text-center py-10 text-3xl border-t-8 border-blue-400 font-black tracking-widest uppercase z-40">
         TÜRKİYE EDS DENETİM VE YÖNETİM MERKEZİ
       </footer>
     </div>
@@ -218,10 +218,17 @@ function InquiryScreen({ fines, onPay }) {
 
 function CameraScreen() {
   const videoRef = useRef(null);
+  const [streamStarted, setStreamStarted] = useState(false);
+
   useEffect(() => {
-    navigator.mediaDevices.getUserMedia({ video: true }).then(s => {
-      if(videoRef.current) videoRef.current.srcObject = s;
-    });
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(s => {
+        if(videoRef.current) {
+          videoRef.current.srcObject = s;
+          setStreamStarted(true);
+        }
+      })
+      .catch(err => console.log("Kamera erişimi reddedildi veya bulunamadı."));
   }, []);
 
   return (
@@ -230,16 +237,43 @@ function CameraScreen() {
         <video 
           ref={videoRef} 
           autoPlay 
+          playsInline
           className="w-full h-full object-cover rounded-[70px] scale-x-[-1] bg-slate-900 aspect-video" 
         />
+        
+        {/* Güvenlik Kamerası Arayüzü Elemanları */}
         <div className="absolute top-20 left-20 flex items-center gap-8 bg-red-600 text-white px-12 py-6 text-4xl font-black rounded-full animate-pulse shadow-2xl">
-          <div className="w-8 h-8 bg-white rounded-full"></div> CANLI MOBESE
+          <div className="w-8 h-8 bg-white rounded-full"></div> CANLI MOBESE-01
         </div>
+        
+        <div className="absolute top-20 right-20 flex flex-col items-end text-white font-mono text-3xl space-y-2 drop-shadow-lg">
+          <div className="bg-black/40 px-6 py-2 rounded-lg border border-white/20">REC ● 00:42:11:08</div>
+          <div className="bg-black/40 px-6 py-2 rounded-lg border border-white/20 text-emerald-400">HD 4K 60FPS</div>
+        </div>
+
+        <div className="absolute bottom-20 left-20 text-white/90 font-mono text-4xl bg-black/60 px-12 py-6 rounded-full backdrop-blur-2xl border-2 border-white/20">
+          KONUM: MERKEZ KAVŞAK / IST
+        </div>
+
         <div className="absolute bottom-20 right-20 text-white/90 font-mono text-3xl bg-black/60 px-12 py-6 rounded-full backdrop-blur-2xl border-2 border-white/20">
-          KAMERA_ID: 01 // {new Date().toLocaleTimeString()}
+          TARİH: {new Date().toLocaleDateString('tr-TR')} // {new Date().toLocaleTimeString()}
         </div>
+
+        {/* Köşe Nişangahları */}
+        <div className="absolute top-10 left-10 w-20 h-20 border-t-8 border-l-8 border-white/50 rounded-tl-3xl"></div>
+        <div className="absolute top-10 right-10 w-20 h-20 border-t-8 border-r-8 border-white/50 rounded-tr-3xl"></div>
+        <div className="absolute bottom-10 left-10 w-20 h-20 border-b-8 border-l-8 border-white/50 rounded-bl-3xl"></div>
+        <div className="absolute bottom-10 right-10 w-20 h-20 border-b-8 border-r-8 border-white/50 rounded-br-3xl"></div>
       </div>
-      <p className="text-center text-slate-500 text-4xl font-black uppercase tracking-[1em] opacity-30 italic">Güvenli Şehir İzleme Sistemi</p>
+      
+      <div className="flex justify-center gap-10">
+         <div className="bg-white/50 px-10 py-5 rounded-full text-slate-500 text-2xl font-black uppercase tracking-widest border border-blue-200">
+           Sistem Durumu: Çevrimiçi
+         </div>
+         <div className="bg-white/50 px-10 py-5 rounded-full text-slate-500 text-2xl font-black uppercase tracking-widest border border-blue-200">
+           Veri Akışı: Aktif
+         </div>
+      </div>
     </div>
   );
 }
