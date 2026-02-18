@@ -3,4 +3,4 @@ export default {
     tailwindcss: {},
     autoprefixer: {},
   },
-}yolu gösterdiğinden emin ol.
+}
